@@ -2,7 +2,7 @@
 
 Helps automate the deployment of Laravel projects onto servers by utilising webhooks.
 
-This should work out-of-the-box with webhooks from GitHub and GitLab servers. 
+This should work out-of-the-box with webhooks from GitHub and GitLab servers.
 
 **Only tested with Laravel 5.1.1 and GitLab 7.14**
 
@@ -14,14 +14,18 @@ Add the following to your `composer.json` file:
 
     {
         "require" : {
-            "orphans/git-deploy-laravel" : "0.1.*"
+            "orphans/git-deploy-laravel" : "dev-master"
         }
     }
-    
+
 Then install/update your composer project as normal.
 
+Add the following line to you providers in `config/app.php`:
+
+    Orphans\GitDeploy\GitDeployServiceProvider::class,
+
 ## Usage
-    
+
 Add a webhook for http://your.website.url/git-deploy to your project in GitHub/GitLab and this package will take care of the rest.
 
 It will automatically receive POST messages from the repo manager and perform a Git pull.
@@ -35,7 +39,7 @@ There is (potentially) important configuration in the package's config file, for
 To add custom configuration run:
 
     php artisan vendor:publish
-    
+
 Then edit `\config\gitdeploy.php` which has been well commented.
 
 ## Future Plans

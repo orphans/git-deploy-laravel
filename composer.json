@@ -4,10 +4,11 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Orphans\\git-deploy-laravel\\": "src"
+            "Orphans\\GitDeploy\\": "src"
         }
     },
     "require": {
-        "Illuminate/support": "~5"
+        "illuminate/http": "~5",
+        "illuminate/config": "~5",
     }
 }
