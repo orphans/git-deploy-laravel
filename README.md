@@ -24,6 +24,12 @@ Add the following line to you providers in `config/app.php`:
 
     Orphans\GitDeploy\GitDeployServiceProvider::class,
 
+And the `git-deploy` route to the `$except` variable in your route CRSF middleware file in `app/Http/Middleware/VerifyCsrfToken.php`:
+
+    protected $except = [
+        'git-deploy',
+    ];
+
 ## Usage
 
 Add a webhook for http://your.website.url/git-deploy to your project in GitHub/GitLab and this package will take care of the rest.
