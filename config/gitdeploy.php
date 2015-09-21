@@ -11,8 +11,8 @@ return [
     | Leave the array empty to disable emails.
     |
     | [
-    |     ['name' => 'Joe Bloggs', 'email' => 'email@example1.com'],
-    |     ['name' => 'Jane Doe', 'email' => 'email@example2.com'],
+    |     ['name' => 'Joe Bloggs', 'address' => 'email@example1.com'],
+    |     ['name' => 'Jane Doe', 'address' => 'email@example2.com'],
     |     ...
     | ]
     |
@@ -61,23 +61,5 @@ return [
     */
 
     'allowed_sources' => [],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Email notifications
-    |--------------------------------------------------------------------------
-    |
-    | An email will be sent to each person in this list after each successful
-    | update.
-    |
-    | [
-    |     ['name' => 'Joe Bloggs', 'email' => 'email@example1.com'],
-    |     ['name' => 'Jane Doe', 'email' => 'email@example2.com'],
-    |     ...
-    | ]
-    |
-    */
-
-    'notify' => [],
 
 ];
