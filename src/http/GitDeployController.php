@@ -17,7 +17,7 @@ class GitDeployController extends Controller
 
 
 		// create a log channel
-		$log = new Logger('name');
+		$log = new Logger('gitdeploy');
 		$log->pushHandler(new StreamHandler(storage_path('logs/gitdeploy.log'), Logger::WARNING));
 
 
