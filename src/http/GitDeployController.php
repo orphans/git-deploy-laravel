@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Response;
 
 class GitDeployController extends Controller
 {
-	public function gitHook(Request $request) {
+	public function gitHook(Request $request)
+	{
 
 		$git_path = !empty(config('gitdeploy.git_path')) ? config('gitdeploy.git_path') : 'git';
 		$git_remote = !empty(config('gitdeploy.remote')) ? config('gitdeploy.remote') : 'origin';
@@ -72,6 +73,7 @@ class GitDeployController extends Controller
 		$pushed_branch = explode('/', $postdata['ref']);
 		$pushed_branch = trim($pushed_branch[2]);
 
+		// If the refs don't matchthis branch, then no need to do a git pull
 		if ($current_branch !== $pushed_branch){
 			return Response::json([
 				'success' => false,
