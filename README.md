@@ -46,7 +46,7 @@ To add custom configuration run:
 
     php artisan vendor:publish
 
-Then edit `\config\gitdeploy.php` which has been well commented.
+Then edit `/config/gitdeploy.php` which has been well commented.
 
 ## Future Plans
 
