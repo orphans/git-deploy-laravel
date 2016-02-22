@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Response;
 
 class GitDeployController extends Controller
 {
-    public function gitHook(Request $request) {
+	public function gitHook(Request $request) {
+
+		$git_path = !empty(config('gitdeploy.git_path')) ? config('gitdeploy.git_path') : 'git';
+		$git_remote = !empty(config('gitdeploy.remote')) ? config('gitdeploy.remote') : 'origin';
 
 		// Limit to known servers
 		if (!empty(config('gitdeploy.allowed_sources')) && !in_array($_SERVER['REMOTE_ADDR'], config('gitdeploy.allowed_sources'))) {
@@ -61,13 +64,30 @@ class GitDeployController extends Controller
 			]);
 		}
 
-		// Do the pull
-		$cmd = 'git -C '.escapeshellarg($repo_dir).' pull origin master 2>&1';
+		// Get current branch this repository is on
+		$cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') .  ' --work-tree=' . escapeshellarg($repo_dir) . ' rev-parse --abbrev-ref HEAD';
+		$current_branch = trim(shell_exec($cmd));
+
+		// Get branch this webhook is for
+		$pushed_branch = explode('/', $postdata['ref']);
+		$pushed_branch = trim($pushed_branch[2]);
+
+		if ($current_branch !== $pushed_branch){
+			return Response::json([
+				'success' => false,
+				'message' => 'Pushed refs do not match current branch',
+			]);
+		}
+
+		// git pull
+		$cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') . ' --work-tree=' . escapeshellarg($repo_dir) . ' pull ' . escapeshellarg($git_remote) . ' ' . escapeshellarg($current_branch) . ' > ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+
 		$server_response = [
 			'cmd' => $cmd,
 			'user' => shell_exec('whoami'),
 			'response' => shell_exec($cmd),
 		];
+
 
 		if (!empty(config('gitdeploy.email_recipients'))) {
 

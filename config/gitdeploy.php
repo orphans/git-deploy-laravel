@@ -62,4 +62,28 @@ return [
 
     'allowed_sources' => [],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Remote name
+    |--------------------------------------------------------------------------
+    |
+    | The name of the remote repository to pull the changes from
+    |
+    */
+    
+    'remote' => 'origin',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Git binary path
+    |--------------------------------------------------------------------------
+    |
+    | The full path to the system git binary. e.g. /usr/bin/git
+    |
+    | Leave blank to let the system detect using the current PATH variable
+    |
+    */
+    
+    'git_path' => '',
+
 ];
