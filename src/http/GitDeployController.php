@@ -30,7 +30,7 @@ class GitDeployController extends Controller
 			return Response::json([
 				'success' => false,
 				'message' => 'Request must come from an approved IP',
-			]);
+			], 500);
 		}
 
 		// Collect the posted data
@@ -40,7 +40,7 @@ class GitDeployController extends Controller
 			return Response::json([
 				'success' => false,
 				'message' => 'Web hook data does not look valid',
-			]);
+			], 500);
 		}
 
 		// Check the config's directory
@@ -50,7 +50,7 @@ class GitDeployController extends Controller
 			return Response::json([
 				'success' => false,
 				'message' => 'Invalid repo path in config',
-			]);
+			], 500);
 		}
 
 		// Try to determine Laravel's directory going up paths until we find a .env
@@ -75,7 +75,7 @@ class GitDeployController extends Controller
 			return Response::json([
 				'success' => false,
 				'message' => 'Could not determine the repo path',
-			]);
+			], 500);
 		}
 
 		// Get current branch this repository is on
@@ -92,7 +92,7 @@ class GitDeployController extends Controller
 			return Response::json([
 				'success' => false,
 				'message' => 'Pushed refs do not match current branch',
-			]);
+			], 500);
 		}
 
 		// git pull
