@@ -26,6 +26,7 @@ class GitDeployServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $source = realpath(__DIR__.'/../config/gitdeploy.php');
         $this->mergeConfigFrom($source, 'gitdeploy');
         $this->app->bind('git_deploy', function ($app) {
             return new GitDeploy;
