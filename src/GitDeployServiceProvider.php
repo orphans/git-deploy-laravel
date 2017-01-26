@@ -15,7 +15,6 @@ class GitDeployServiceProvider extends ServiceProvider
     {
         $source = realpath(__DIR__.'/../config/gitdeploy.php');
         $this->publishes([$source => config_path('gitdeploy.php')]);
-        $this->mergeConfigFrom($source, 'gitdeploy');
         $this->loadViewsFrom(__DIR__.'/views', 'gitdeploy');
         require __DIR__.'/http/routes.php';
     }
@@ -27,6 +26,7 @@ class GitDeployServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom($source, 'gitdeploy');
         $this->app->bind('git_deploy', function ($app) {
             return new GitDeploy;
         });
