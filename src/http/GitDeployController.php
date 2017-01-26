@@ -136,7 +136,7 @@ class GitDeployController extends Controller
 			$addressdata['recipients'] = config('gitdeploy.email_recipients');
 
 			\Mail::send('gitdeploy::email', [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
-				$message->sender($addressdata['sender_address'], $addressdata['sender_name']);
+				$message->from($addressdata['sender_address'], $addressdata['sender_name']);
 				foreach ($addressdata['recipients'] as $recipient) {
 					$message->to($recipient['address'], $recipient['name']);
 				}
