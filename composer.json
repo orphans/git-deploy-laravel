@@ -9,6 +9,7 @@
     },
     "require": {
         "illuminate/http": "~5",
-        "illuminate/config": "~5"
+        "illuminate/config": "~5",
+        "illuminate/support": "~5"
     }
 }

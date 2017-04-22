@@ -13,10 +13,12 @@ class GitDeployServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $source = realpath(__DIR__.'/../config/gitdeploy.php');
-        $this->publishes([$source => config_path('gitdeploy.php')]);
-        $this->loadViewsFrom(__DIR__.'/views', 'gitdeploy');
-        require __DIR__.'/http/routes.php';
+        $this->publishes([
+            __dir__ . '/../config/gitdeploy.php' => config_path('gitdeploy.php')
+        ], 'config');
+        $this->loadRoutesFrom(__dir__ . '/http/routes.php');
+        $this->loadViewsFrom(__dir__ . '/views', 'gitdeploy');
+
     }
 
     /**
@@ -26,8 +28,7 @@ class GitDeployServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $source = realpath(__DIR__.'/../config/gitdeploy.php');
-        $this->mergeConfigFrom($source, 'gitdeploy');
+        $this->mergeConfigFrom(__dir__ . '/../config/gitdeploy.php', 'gitdeploy');
         $this->app->bind('git_deploy', function ($app) {
             return new GitDeploy;
         });
