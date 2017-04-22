@@ -1,16 +1,17 @@
-# git-deploy-laravel
+# Deployments Laravel projects using Git webhooks
 
-Helps automate the deployment of Laravel projects onto servers by utilising webhooks.
+git-deploy-laravel assists deployment by receiving a push event message from your repository's server and automatically pulling project code.
 
-This should work out-of-the-box with webhooks from GitHub and GitLab servers.
-
-**Only tested with Laravel 5.1.1 and GitLab 7.14**
+This should work out-of-the-box with Laravel 5.x using with webhooks from GitHub and GitLab servers.
 
 This is an internal tool to help with our common workflow pattern but please feel free to borrow, change and improve.
 
 ## Installation
 
-Add the following to your `composer.json` file:
+
+### Step 1
+
+Add the following to your `composer.json` file then update your composer as normal:
 
     {
         "require" : {
@@ -18,13 +19,22 @@ Add the following to your `composer.json` file:
         }
     }
 
-Then install/update your composer project as normal.
+Or run:
+
+    composer require orphans/git-deploy-laravel
+
+### Step 2
 
 Add the following line to you providers in `config/app.php`:
 
     Orphans\GitDeploy\GitDeployServiceProvider::class,
 
-And the `git-deploy` route to the `$except` variable in your route CRSF middleware file in `app/Http/Middleware/VerifyCsrfToken.php`:
+### Step 3
+
+Add the _/git-deploy_ route to CSRF exceptions so your repo's host can send messages to your project.
+
+
+In file in `app/Http/Middleware/VerifyCsrfToken.php` add:
 
     protected $except = [
         'git-deploy',
@@ -32,24 +42,21 @@ And the `git-deploy` route to the `$except` variable in your route CRSF middlewa
 
 ## Usage
 
-Add a webhook for http://your.website.url/git-deploy to your project in GitHub/GitLab and this package will take care of the rest.
+Add a webhook for http://your.website.url/git-deploy to your project in GitHub/GitLab and this package will take care of the rest. The webhook should fire on push-events.
 
-It will automatically receive POST messages from the repo manager and perform a Git pull.
+Your website will automatically receive POST messages from the repo manager and perform a Git pull.
 
 ## Configuration
 
-There is (potentially) important configuration in the package's config file, for things like the email notifications and your repository's root path on the file system.
-
-> Note that this tool tries to automatically determine the repository's root path and that should work suffiently in most cases.
+In most cases the package will find the correct Git repository and Git executable but we advise publishing our config anyway because it will let you enable extra security options and email notifications.
 
 To add custom configuration run:
 
-    php artisan vendor:publish
+    php artisan vendor:publish --provider="Orphans\GitDeploy\GitDeployServiceProvider"
 
-Then edit `/config/gitdeploy.php` which has been well commented.
+Then edit `/config/gitdeploy.php`, which has been well commented.
 
 ## Future Plans
 
-* Testing on GitHub and different versions of Laravel & GitLab.
 * Branch management (i.e. only tigger on changes to active branch).
 * Email report on code conflicts that prevent a pull.
