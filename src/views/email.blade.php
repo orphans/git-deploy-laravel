@@ -1,6 +1,6 @@
 <div style="font-family:sans-serif; font-size:11pt;">
 	<h1>{{ $git['repository']['name'] }} updated</h1>
-	<p>The Git repository has just been updated by <em>{{ $git['user_name'] }}</em> via the web hook.</p>
+	<p>The Git repository has just been updated by <em>{{ $git['pusher']['name']}}</em> via the web hook.</p>
 	<table cellspacing="0" cellpadding="10" width="100%" style="background:#F6F6F6; border:1px solid #EEEEEE; font-size:11pt; margin-bottom: 0.5em;">
 		<tr>
 			<td valign="top" align="right"><strong>System user</strong></td>
