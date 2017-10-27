@@ -11,5 +11,12 @@
         "illuminate/http": "~5",
         "illuminate/config": "~5",
         "illuminate/support": "~5"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Orphans\\GitDeploy\\GitDeployServiceProvider"
+            ]
+        }
     }
 }
