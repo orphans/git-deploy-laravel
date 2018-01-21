@@ -33,7 +33,7 @@ class GitDeployController extends Controller
 			return Response::json([
 				'success' => false,
 				'message' => 'Request must come from an approved IP',
-			], 500);
+			], 401);
 		}
 
 		// Collect the posted data
