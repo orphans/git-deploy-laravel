@@ -124,7 +124,7 @@ return [
     |    'secret_header' => 'X-Hub-Signature',
     */
    
-    'secret' => true,
+    'secret' => false,
 
     /**
      * plain|hmac
