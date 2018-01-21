@@ -102,4 +102,43 @@ return [
 
     'maintenance_mode' => true,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Secret signature
+    |--------------------------------------------------------------------------
+    |
+    | Allow webhook requests to be signed with a secret signature.
+    |
+    | If 'secret' is set to true, Gitdeploy will deny requests where the
+    | signature does not match. If set to false it will ignore any signature
+    | headers it recieves.
+    | 
+    | For Gitlab servers, you probably want the settings below:
+    | 
+    |     'secret_type' => 'plain',
+    |     'secret_header' => 'X-Gitlab-Token',
+    |
+    | For Github, use something like the below (untested):
+    |
+    |    'secret_type' => 'hmac',
+    |    'secret_header' => 'X-Hub-Signature',
+    */
+   
+    'secret' => true,
+
+    /**
+     * plain|hmac
+     */
+    'secret_type' => 'plain',
+
+    /**
+     * X-Gitlab-Token|X-Hub-Signature
+     */
+    'secret_header' => 'X-Gitlab-Token',
+
+    /**
+     * The key you specified in the pushing client
+     */
+    'secret_key' => 'ABC123',
+
 ];

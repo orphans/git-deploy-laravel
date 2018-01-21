@@ -81,6 +81,73 @@ class GitDeployController extends Controller
 			], 500);
 		}
 
+		// Check signatures
+		if (!empty(config('gitdeploy.secret'))) {
+			$header = config('gitdeploy.secret_header');
+			$header_data = $request->header($header);
+
+			/**
+			 * Check for valid header
+			 */
+			if (!$header_data) {
+				$log->addError('Could not find header with name ' . $header);
+				return Response::json([
+					'success' => false,
+					'message' => 'Could not find header with name ' . $header,
+				], 401);
+			}
+
+			/**
+			 * Sanity check for key
+			 */
+			if (empty(config('gitdeploy.secret_key'))) {
+				$log->addError('Secret was set to true but no secret_key specified in config');
+				return Response::json([
+					'success' => false,
+					'message' => 'Secret was set to true but no secret_key specified in config',
+				], 500);
+			}
+
+			/**
+			 * Check plain secrets (Gitlab)
+			 */
+			if (config('gitdeploy.secret_type') == 'plain') {
+				if ($header_data !== config('gitdeploy.secret_key')) {
+					$log->addError('Secret did not match');
+					return Response::json([
+						'success' => false,
+						'message' => 'Secret did not match',
+					], 401);
+				}
+			}
+
+			/**
+			 * Check hmac secrets (Github)
+			 */
+			else if (config('gitdeploy.secret_type') == 'mac') {
+				if (!hash_equals('sha1=' . hash_hmac('sha1', $request->getContent(), config('gitdeploy.secret')))){
+					$log->addError('Secret did not match');
+					return Response::json([
+						'success' => false,
+						'message' => 'Secret did not match',
+					], 401);
+				}
+			}
+
+			/**
+			 * Catch all for anything odd in config
+			 */
+			else {
+				$log->addError('Unsupported secret type');
+				return Response::json([
+					'success' => false,
+					'message' => 'Unsupported secret type',
+				], 500);
+			}
+
+			// If we get this far then the secret matched, lets go ahead!
+		}
+
 		// Get current branch this repository is on
 		$cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') .  ' --work-tree=' . escapeshellarg($repo_dir) . ' rev-parse --abbrev-ref HEAD';
 		$current_branch = trim(shell_exec($cmd));
