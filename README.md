@@ -28,6 +28,8 @@ Or run:
 Add the following line to you providers in `config/app.php`:
 
     Orphans\GitDeploy\GitDeployServiceProvider::class,
+    
+** New in Laravel 5.5 - Service provide should be automatically detected without the above change **
 
 ### Step 3
 
