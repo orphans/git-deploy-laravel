@@ -139,6 +139,6 @@ return [
     /**
      * The key you specified in the pushing client
      */
-    'secret_key' => 'ABC123',
+    'secret_key' => '',
 
 ];
