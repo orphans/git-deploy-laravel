@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Response;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
+use Artisan;
+
 class GitDeployController extends Controller
 {
 	public function gitHook(Request $request)
@@ -95,6 +97,11 @@ class GitDeployController extends Controller
 			], 500);
 		}
 
+		// At this point we're happy everything is OK to pull, lets put Laravel into Maintenance mode.
+		if (!empty(config('gitdeploy.maintenance_mode'))) {
+			Artisan::call('down');
+		}
+
 		// git pull
 		$cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') . ' --work-tree=' . escapeshellarg($repo_dir) . ' pull ' . escapeshellarg($git_remote) . ' ' . escapeshellarg($current_branch) . ' > ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
 
@@ -104,6 +111,10 @@ class GitDeployController extends Controller
 			'response' => shell_exec($cmd),
 		];
 
+		// Put site back up and end maintenance mode
+		if (!empty(config('gitdeploy.maintenance_mode'))) {
+			Artisan::call('up');
+		}
 
 		if (!empty(config('gitdeploy.email_recipients'))) {
 

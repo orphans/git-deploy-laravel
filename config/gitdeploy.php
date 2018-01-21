@@ -86,4 +86,20 @@ return [
     
     'git_path' => '',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Maintenance mode
+    |--------------------------------------------------------------------------
+    |
+    | Allow the git hook to put the site into maintenance mode before doing
+    | the pull from the remote server.
+    |
+    | After a successful pull the site will be switched back to normal
+    | operations. This does leave a possibility of the site remaining in
+    | maintenance mode should an error occur during the pull.
+    |
+    */
+
+    'maintenance_mode' => true,
+
 ];
