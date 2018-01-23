@@ -18,22 +18,26 @@ class GitDeployController extends Controller
 	public function gitHook(Request $request)
 	{
 
-
 		// create a log channel
 		$log = new Logger('gitdeploy');
 		$log->pushHandler(new StreamHandler(storage_path('logs/gitdeploy.log'), Logger::WARNING));
-
 
 		$git_path = !empty(config('gitdeploy.git_path')) ? config('gitdeploy.git_path') : 'git';
 		$git_remote = !empty(config('gitdeploy.remote')) ? config('gitdeploy.remote') : 'origin';
 
 		// Limit to known servers
-		if (!empty(config('gitdeploy.allowed_sources')) && !in_array($_SERVER['REMOTE_ADDR'], config('gitdeploy.allowed_sources'))) {
-			$log->addError('Request must come from an approved IP');
-			return Response::json([
-				'success' => false,
-				'message' => 'Request must come from an approved IP',
-			], 401);
+		if (!empty(config('gitdeploy.allowed_sources'))) {
+
+			$remote_ip = $this->formatIPAddress($_SERVER['REMOTE_ADDR']);
+			$allowed_sources = array_map([$this, 'formatIPAddress'], config('gitdeploy.allowed_sources'));
+
+			if (!in_array($remote_ip, $allowed_sources)) {
+				$log->addError('Request must come from an approved IP');
+				return Response::json([
+					'success' => false,
+					'message' => 'Request must come from an approved IP',
+				], 401);
+			}
 		}
 
 		// Collect the posted data
@@ -228,6 +232,20 @@ class GitDeployController extends Controller
 		}
 
 		return Response::json(true);
-
 	}
+
+
+	/**
+	 * Make sure we're comparing like for like IP address formats.
+	 * Since IPv6 can be supplied in short hand or long hand formats.
+	 *
+	 * e.g. ::1 is equalvent to 0000:0000:0000:0000:0000:0000:0000:0001
+	 * 
+	 * @param  string $ip	Input IP address to be formatted
+	 * @return string	Formatted IP address
+	 */
+	private function formatIPAddress(string $ip) {
+		return inet_ntop(inet_pton($ip));
+	}
+
 }

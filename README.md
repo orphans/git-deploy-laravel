@@ -119,6 +119,15 @@ return [
     | This is useful for a little extra security if you run your own Git
     | repo server.
     |
+    | Relies on the REMOTE_ADDR of the connecting client matching a value
+    | in the array below. So if using IPv6 on both the server and the
+    | notifing git server, then make sure to add it to the array. If your git
+    | server listens on IPv4 and IPv6 it would be safest to add both.
+    |
+    | e.g.
+    | 
+    | 'allowed_sources' => ['192.160.0.1', '::1'], 
+    |
     */
 
     'allowed_sources' => [],
