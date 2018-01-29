@@ -217,5 +217,7 @@ return [
 
 ## Future Plans
 
-* Branch management (i.e. only tigger on changes to active branch).
-* Email report on code conflicts that prevent a pull.
+* Email report on code conflicts that prevent a pull
+* Support for performing `composer install` after deployment
+* Support for restarting laravel queues after deployment with `artisan queue:restart`
+* Support for running custom artisan commands after successful pulls
