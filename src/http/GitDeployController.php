@@ -195,6 +195,7 @@ class GitDeployController extends Controller
 		}
 
         if (!empty(config('gitdeploy.fire_event'))) {
+            Log::debug('Gitdeploy: Event GitDeployed fired');
             Event::fire(new GitDeployed($postdata['commits']));
         }
 
