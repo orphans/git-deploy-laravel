@@ -191,13 +191,14 @@ class GitDeployController extends Controller
 
 		// Put site back up and end maintenance mode
 		if (!empty(config('gitdeploy.maintenance_mode'))) {
-			Log::info('Gitdeploy: taking site out of maintenance mode');
 			Artisan::call('up');
+            Log::info('Gitdeploy: taking site out of maintenance mode');
 		}
 
+		// Fire Event that git were deployed
         if (!empty(config('gitdeploy.fire_event'))) {
-            Log::debug('Gitdeploy: Event GitDeployed fired');
             Event::fire(new GitDeployed($postdata['commits']));
+            Log::debug('Gitdeploy: Event GitDeployed fired');
         }
 
 		if (!empty(config('gitdeploy.email_recipients'))) {
@@ -230,6 +231,7 @@ class GitDeployController extends Controller
 			// Recipients
 			$addressdata['recipients'] = config('gitdeploy.email_recipients');
 
+			// Todo: Put Mail send into queue to improve performance
 			\Mail::send('gitdeploy::email', [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
 				$message->from($addressdata['sender_address'], $addressdata['sender_name']);
 				foreach ($addressdata['recipients'] as $recipient) {
