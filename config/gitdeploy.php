@@ -34,6 +34,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email template
+    |--------------------------------------------------------------------------
+    |
+    | We have a good email template but if you need to change the view, create your own email template and change it here.
+    | Default is 'gitdeploy::email'
+    |
+    */
+    'email_template' => 'gitdeploy::email',
+    /*
+    |--------------------------------------------------------------------------
     | Repository path
     |--------------------------------------------------------------------------
     |

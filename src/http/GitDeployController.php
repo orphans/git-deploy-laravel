@@ -231,8 +231,17 @@ class GitDeployController extends Controller
 			// Recipients
 			$addressdata['recipients'] = config('gitdeploy.email_recipients');
 
-			// Todo: Put Mail send into queue to improve performance
-			\Mail::send('gitdeploy::email', [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
+
+
+            if (!empty(config('gitdeploy.email_template'))) {
+                $emailTemplate = config('gitdeploy.email_template');
+            }
+            else{
+                $emailTemplate = 'gitdeploy::email';
+            }
+
+            // Todo: Put Mail send into queue to improve performance
+			\Mail::send($emailTemplate , [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
 				$message->from($addressdata['sender_address'], $addressdata['sender_name']);
 				foreach ($addressdata['recipients'] as $recipient) {
 					$message->to($recipient['address'], $recipient['name']);
