@@ -4,7 +4,7 @@ namespace Orphans\GitDeploy\Http;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Events;
+// use Illuminate\Events;
 use Illuminate\Support\Facades\Response;
 // use App\Http\Requests;
 
@@ -13,6 +13,7 @@ use Monolog\Handler\StreamHandler;
 
 use Artisan;
 use Log;
+use Event;
 
 use Orphans\GitDeploy\Events\GitDeployed;
 
@@ -157,7 +158,7 @@ class GitDeployController extends Controller
 
 		// Get current branch this repository is on
 		$cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') .  ' --work-tree=' . escapeshellarg($repo_dir) . ' rev-parse --abbrev-ref HEAD';
-		$current_branch = trim(shell_exec($cmd));
+		$current_branch = trim(exec($cmd)); //Alternativly shell_exec
 
 		// Get branch this webhook is for
 		$pushed_branch = explode('/', $postdata['ref']);
