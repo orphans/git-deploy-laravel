@@ -43,9 +43,12 @@ In file in `app/Http/Middleware/VerifyCsrfToken.php` add:
     ];
 
 ### Step 4 Optional
+In case you need additional action after a successful commit, you can add you own Event Listener.
+For example you can write your own update script to run migrations etc.
 
-    Create a Listener to perform action when a git deployment is done.
-    Open the `App/Listeners` directory (or create it if it doesn't exist). Now create a new file and call it `GitDeployedListener.php`. Paste in this code:
+**1)**  Create a Listener to perform action when a git deployment is done.
+Open the `App/Listeners` directory (or create it if it doesn't exist). Now create a new file and call it `GitDeployedListener.php`. Paste in this code:
+
 ```php
 <?php
 
