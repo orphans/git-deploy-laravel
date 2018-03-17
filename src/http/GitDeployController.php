@@ -4,6 +4,7 @@ namespace Orphans\GitDeploy\Http;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Events;
 use Illuminate\Support\Facades\Response;
 // use App\Http\Requests;
 
@@ -12,6 +13,8 @@ use Monolog\Handler\StreamHandler;
 
 use Artisan;
 use Log;
+
+use Orphans\GitDeploy\Events\GitDeployed;
 
 class GitDeployController extends Controller
 {
@@ -190,6 +193,10 @@ class GitDeployController extends Controller
 			Log::info('Gitdeploy: taking site out of maintenance mode');
 			Artisan::call('up');
 		}
+
+        if (!empty(config('gitdeploy.fire_event'))) {
+            Event::fire(new GitDeployed($postdata['commits']));
+        }
 
 		if (!empty(config('gitdeploy.email_recipients'))) {
 

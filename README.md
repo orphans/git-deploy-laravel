@@ -42,6 +42,64 @@ In file in `app/Http/Middleware/VerifyCsrfToken.php` add:
         'git-deploy',
     ];
 
+### Step 4 Optional
+
+    Create a Listener to perform action when a git deployment is done.
+    Open the `App/Listeners` directory (or create it if it doesn't exist). Now create a new file and call it `GitDeployedListener.php`. Paste in this code:
+```php
+<?php
+
+namespace App\Listeners;
+
+use \Orphans\GitDeploy\Events\GitDeployed;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class GitDeployedListener implements ShouldQueue
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        // Here you can setup something
+    }
+
+    /**
+     * Handle the event.
+     *
+     * @param  ReactionAdded  $event
+     * @return void
+     */
+    public function handle(GitDeployed $gitDeployed)
+    {
+        // Do some magic with event data $gitDeployed contains the commits
+
+    }
+}
+
+```
+As you can see, it's a normal event listener. You might notice that the listener `implements ShouldQueue` — it's useful because our app must respond fast. If you want some long-running stuff in your event listener, you need to configure a queue.
+
+**2)** Now we add this listener to `/App/Providers/EventServiceProvider.php` like any other event listener:
+```php
+// ...
+
+protected $listen = [
+
+        // ...
+
+       \Orphans\GitDeploy\Events\GitDeployed::class => [
+            \App\Listeners\GitDeployedListener::class
+        ]
+    ];
+
+// ...
+```
+
+
 ## Usage
 
 Add a webhook for http://your.website.url/git-deploy to your project in GitHub/GitLab and this package will take care of the rest. The webhook should fire on push-events.
