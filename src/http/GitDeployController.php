@@ -4,9 +4,7 @@ namespace Orphans\GitDeploy\Http;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-// use Illuminate\Events;
 use Illuminate\Support\Facades\Response;
-// use App\Http\Requests;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -231,14 +229,8 @@ class GitDeployController extends Controller
             // Recipients
             $addressdata['recipients'] = config('gitdeploy.email_recipients');
 
-
-
-            if (!empty(config('gitdeploy.email_template'))) {
-                $emailTemplate = config('gitdeploy.email_template');
-            }
-            else{
-                $emailTemplate = 'gitdeploy::email';
-            }
+            // Template
+            $emailTemplate = config('gitdeploy.email_template', 'gitdeploy::email');
 
             // Todo: Put Mail send into queue to improve performance
             \Mail::send($emailTemplate , [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
