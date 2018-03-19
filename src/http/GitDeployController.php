@@ -4,6 +4,7 @@ namespace Orphans\GitDeploy\Http;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+// use Illuminate\Events;
 use Illuminate\Support\Facades\Response;
 // use App\Http\Requests;
 
@@ -12,6 +13,9 @@ use Monolog\Handler\StreamHandler;
 
 use Artisan;
 use Log;
+use Event;
+
+use Orphans\GitDeploy\Events\GitDeployed;
 
 class GitDeployController extends Controller
 {
@@ -154,7 +158,7 @@ class GitDeployController extends Controller
 
 		// Get current branch this repository is on
 		$cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') .  ' --work-tree=' . escapeshellarg($repo_dir) . ' rev-parse --abbrev-ref HEAD';
-		$current_branch = trim(shell_exec($cmd));
+		$current_branch = trim(exec($cmd)); //Alternativly shell_exec
 
 		// Get branch this webhook is for
 		$pushed_branch = explode('/', $postdata['ref']);
@@ -187,9 +191,15 @@ class GitDeployController extends Controller
 
 		// Put site back up and end maintenance mode
 		if (!empty(config('gitdeploy.maintenance_mode'))) {
-			Log::info('Gitdeploy: taking site out of maintenance mode');
 			Artisan::call('up');
+            Log::info('Gitdeploy: taking site out of maintenance mode');
 		}
+
+		// Fire Event that git were deployed
+        if (!empty(config('gitdeploy.fire_event'))) {
+            event(new GitDeployed($postdata['commits']));
+            Log::debug('Gitdeploy: Event GitDeployed fired');
+        }
 
 		if (!empty(config('gitdeploy.email_recipients'))) {
 
@@ -221,7 +231,17 @@ class GitDeployController extends Controller
 			// Recipients
 			$addressdata['recipients'] = config('gitdeploy.email_recipients');
 
-			\Mail::send('gitdeploy::email', [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
+
+
+            if (!empty(config('gitdeploy.email_template'))) {
+                $emailTemplate = config('gitdeploy.email_template');
+            }
+            else{
+                $emailTemplate = 'gitdeploy::email';
+            }
+
+            // Todo: Put Mail send into queue to improve performance
+			\Mail::send($emailTemplate , [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
 				$message->from($addressdata['sender_address'], $addressdata['sender_name']);
 				foreach ($addressdata['recipients'] as $recipient) {
 					$message->to($recipient['address'], $recipient['name']);

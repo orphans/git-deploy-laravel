@@ -34,6 +34,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email template
+    |--------------------------------------------------------------------------
+    |
+    | We have a good email template but if you need to change the view, create your own email template and change it here.
+    | Default is 'gitdeploy::email'
+    |
+    */
+    'email_template' => 'gitdeploy::email',
+    /*
+    |--------------------------------------------------------------------------
     | Repository path
     |--------------------------------------------------------------------------
     |
@@ -110,6 +120,17 @@ return [
     */
 
     'maintenance_mode' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fire Event
+    |--------------------------------------------------------------------------
+    |
+    | Allow the git hook to fire a event "GitDeployed" so that everybody can listen to that event.
+    | See readme how to create a nice listener on that.    |
+    |
+    */
+    'fire_event' => true,
 
     /*
     |--------------------------------------------------------------------------
