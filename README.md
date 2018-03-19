@@ -235,6 +235,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Fire Event
+    |--------------------------------------------------------------------------
+    |
+    | Allow the git hook to fire a event "GitDeployed" so that everybody can listen to that event.
+    | See readme how to create a nice listener on that.
+    |
+    */
+    'fire_event' => true,
+
+    /*
+    |--------------------------------------------------------------------------
     | Secret signature
     |--------------------------------------------------------------------------
     |
