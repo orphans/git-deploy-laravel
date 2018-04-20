@@ -29,28 +29,27 @@ class GitDeployController extends Controller
 
         // Limit to known servers
         if (!empty(config('gitdeploy.allowed_sources'))) {
-
             $remote_ip = $this->formatIPAddress($_SERVER['REMOTE_ADDR']);
             $allowed_sources = array_map([$this, 'formatIPAddress'], config('gitdeploy.allowed_sources'));
 
-                if (!in_array($remote_ip, $allowed_sources)) {
-                    $log->addError('Request must come from an approved IP');
-                        return Response::json([
+            if (!in_array($remote_ip, $allowed_sources)) {
+                $log->addError('Request must come from an approved IP');
+                return Response::json([
                             'success' => false,
                             'message' => 'Request must come from an approved IP',
                         ], 401);
-                }
             }
+        }
 
-            // Collect the posted data
-            $postdata = json_decode($request->getContent(), TRUE);
-            if (empty($postdata)) {
-                $log->addError('Web hook data does not look valid');
-                    return Response::json([
+        // Collect the posted data
+        $postdata = json_decode($request->getContent(), true);
+        if (empty($postdata)) {
+            $log->addError('Web hook data does not look valid');
+            return Response::json([
                         'success' => false,
                         'message' => 'Web hook data does not look valid',
-                ], 500);
-            }
+                ], 400);
+        }
 
         // Check the config's directory
         $repo_dir = config('gitdeploy.repo_path');
@@ -130,8 +129,8 @@ class GitDeployController extends Controller
             /**
              * Check hmac secrets (Github)
              */
-            else if (config('gitdeploy.secret_type') == 'mac') {
-                if (!hash_equals('sha1=' . hash_hmac('sha1', $request->getContent(), config('gitdeploy.secret')))){
+            elseif (config('gitdeploy.secret_type') == 'mac') {
+                if (!hash_equals('sha1=' . hash_hmac('sha1', $request->getContent(), config('gitdeploy.secret')))) {
                     $log->addError('Secret did not match');
                     return Response::json([
                         'success' => false,
@@ -148,7 +147,7 @@ class GitDeployController extends Controller
                 return Response::json([
                     'success' => false,
                     'message' => 'Unsupported secret type',
-                ], 500);
+                ], 422);
             }
 
             // If we get this far then the secret matched, lets go ahead!
@@ -158,17 +157,30 @@ class GitDeployController extends Controller
         $cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') .  ' --work-tree=' . escapeshellarg($repo_dir) . ' rev-parse --abbrev-ref HEAD';
         $current_branch = trim(exec($cmd)); //Alternativly shell_exec
 
-        // Get branch this webhook is for
-        $pushed_branch = explode('/', $postdata['ref']);
-        $pushed_branch = trim($pushed_branch[2]);
+        // Get branch this webhook is for if push event
+        if (isset($postdata['ref'])) {
+            $pushed_branch = explode('/', $postdata['ref']);
+            $pushed_branch = trim($pushed_branch[2]);
+            // Get branch this webhook is for if pull request
+        } elseif (isset($postdata['base']['ref'])) {
+            $pushed_branch = explode('/', $postdata['base']['ref']);
+            $pushed_branch = trim($pushed_branch[2]);
+            // Get branch fails
+        } else {
+            $log->addWarning('Could not determine refs for action');
+            return Response::json([
+                'success' => false,
+                'message' => 'Could not determine refs for action',
+            ], 422);
+        }
 
         // If the refs don't matchthis branch, then no need to do a git pull
-        if ($current_branch !== $pushed_branch){
+        if ($current_branch !== $pushed_branch) {
             $log->addWarning('Pushed refs do not match current branch');
             return Response::json([
                 'success' => false,
                 'message' => 'Pushed refs do not match current branch',
-            ], 500);
+            ], 422);
         }
 
         // At this point we're happy everything is OK to pull, lets put Laravel into Maintenance mode.
@@ -233,14 +245,13 @@ class GitDeployController extends Controller
             $emailTemplate = config('gitdeploy.email_template', 'gitdeploy::email');
 
             // Todo: Put Mail send into queue to improve performance
-            \Mail::send($emailTemplate , [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
+            \Mail::send($emailTemplate, [ 'server' => $server_response, 'git' => $postdata ], function ($message) use ($postdata, $addressdata) {
                 $message->from($addressdata['sender_address'], $addressdata['sender_name']);
                 foreach ($addressdata['recipients'] as $recipient) {
                     $message->to($recipient['address'], $recipient['name']);
                 }
                 $message->subject('Repo: ' . $postdata['repository']['name'] . ' updated');
             });
-
         }
 
         return Response::json(true);
@@ -252,12 +263,12 @@ class GitDeployController extends Controller
      * Since IPv6 can be supplied in short hand or long hand formats.
      *
      * e.g. ::1 is equalvent to 0000:0000:0000:0000:0000:0000:0000:0001
-     * 
+     *
      * @param  string $ip   Input IP address to be formatted
      * @return string   Formatted IP address
      */
-    private function formatIPAddress(string $ip) {
+    private function formatIPAddress(string $ip)
+    {
         return inet_ntop(inet_pton($ip));
     }
-
 }
