@@ -191,13 +191,26 @@ class GitDeployController extends Controller
 
         // git pull
         Log::info('Gitdeploy: Pulling latest code on to server');
-        $cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') . ' --work-tree=' . escapeshellarg($repo_dir) . ' pull ' . escapeshellarg($git_remote) . ' ' . escapeshellarg($current_branch) . ' > ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+        $cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') . ' --work-tree=' . escapeshellarg($repo_dir) . ' pull ' . escapeshellarg($git_remote) . ' ' . escapeshellarg($current_branch) . ' &>> ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
 
         $server_response = [
             'cmd' => $cmd,
             'user' => shell_exec('whoami'),
             'response' => shell_exec($cmd),
         ];
+
+        //Lets see if we have commands to run and run them
+        if (!empty(config('gitdeploy.commands'))) {
+            foreach ($commands as $command) {
+                $cmd = escapeshellcmd($command). ' &>> ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+                exec($cmd, $output, $returnCode);
+                array_push($command_results, [
+                    'cmd' => $cmd,
+                    'output' => $output,
+                    'return_code' => $returnCode,
+                ]);
+            }
+        }
 
         // Put site back up and end maintenance mode
         if (!empty(config('gitdeploy.maintenance_mode'))) {
