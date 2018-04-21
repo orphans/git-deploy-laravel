@@ -205,12 +205,15 @@ class GitDeployController extends Controller
             $command_results = array();
             foreach ($commands as $command) {
                 $cmd = escapeshellcmd($command). ' &>> ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+                Log::info('Gitdeploy: Running post pull command: '.$cmd);
                 exec($cmd, $output, $returnCode);
                 array_push($command_results, [
                     'cmd' => $cmd,
                     'output' => $output,
                     'return_code' => $returnCode,
                 ]);
+                Log::info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
+                Log::info('Gitdeploy: ' . $cmd . 'output: ' . $output);
             }
         }
 
@@ -260,7 +263,7 @@ class GitDeployController extends Controller
             $emailTemplate = config('gitdeploy.email_template', 'gitdeploy::email');
 
             // Todo: Put Mail send into queue to improve performance
-            \Mail::send($emailTemplate, [ 'server' => $server_response, 'git' => $postdata ], function ($message) use ($postdata, $addressdata) {
+            \Mail::send($emailTemplate, [ 'server' => $server_response, 'git' => $postdata, 'command_results' => $command_results ], function ($message) use ($postdata, $addressdata) {
                 $message->from($addressdata['sender_address'], $addressdata['sender_name']);
                 foreach ($addressdata['recipients'] as $recipient) {
                     $message->to($recipient['address'], $recipient['name']);
