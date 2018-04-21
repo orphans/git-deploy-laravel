@@ -201,6 +201,7 @@ class GitDeployController extends Controller
 
         //Lets see if we have commands to run and run them
         if (!empty(config('gitdeploy.commands'))) {
+            $commands = config('gitdeploy.commands');
             foreach ($commands as $command) {
                 $cmd = escapeshellcmd($command). ' &>> ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
                 exec($cmd, $output, $returnCode);
