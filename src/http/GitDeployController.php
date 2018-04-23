@@ -22,7 +22,7 @@ class GitDeployController extends Controller
 
         // create a log channel
         $log = new Logger('gitdeploy');
-        $log->pushHandler(new StreamHandler(storage_path('logs/gitdeploy.log'), Logger::WARNING));
+        $log->pushHandler(new StreamHandler(storage_path('logs/gitdeploy.log'), Logger::DEBUG));
 
         $git_path = !empty(config('gitdeploy.git_path')) ? config('gitdeploy.git_path') : 'git';
         $git_remote = !empty(config('gitdeploy.remote')) ? config('gitdeploy.remote') : 'origin';
