@@ -176,10 +176,12 @@ return [
     | Post Pull Commands
     |--------------------------------------------------------------------------
     |
-    | Array of command to complete after the pull
+    | Array of commands to complete after the pull.
+    | All commands will be run from the repo path
     |
     | 'commands' => [
     |     'composer install --no-dev --optimize-autoloader',
+    |     'php artisan migrate --force'
     |     'npm install --production',
     |     'npm run production',
     |     'php artisan config:cache',
@@ -189,11 +191,5 @@ return [
     */
 
     'commands' => [
-        'composer install --no-dev --optimize-autoloader',
-        'npm install --production',
-        'npm run production',
-        'php artisan config:cache',
-        'php artisan route:cache',
-        'php artisan view:cache',
-    ]
+    ],
 ];
