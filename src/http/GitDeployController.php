@@ -213,7 +213,7 @@ class GitDeployController extends Controller
                     'return_code' => $returnCode,
                 ]);
                 Log::info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
-                Log::info('Gitdeploy: ' . $cmd . 'output: ' . $output);
+                Log::info('Gitdeploy: ' . $cmd . 'output: ' . print_r($output, true));
             }
         }
 
