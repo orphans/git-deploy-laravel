@@ -191,13 +191,28 @@ class GitDeployController extends Controller
 
         // git pull
         Log::info('Gitdeploy: Pulling latest code on to server');
-        $cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') . ' --work-tree=' . escapeshellarg($repo_dir) . ' pull ' . escapeshellarg($git_remote) . ' ' . escapeshellarg($current_branch) . ' &>> ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+
+        $output = array();
+        $returnCode = '';
+
+        $cmd = escapeshellcmd($git_path)
+                . ' --git-dir='
+                . escapeshellarg($repo_dir . '/.git')
+                . ' --work-tree=' . escapeshellarg($repo_dir)
+                . ' pull ' . escapeshellarg($git_remote)
+                . ' '
+                . escapeshellarg($current_branch);
+
+        exec($cmd, $output, $returnCode);
 
         $server_response = [
             'cmd' => $cmd,
             'user' => shell_exec('whoami'),
-            'response' => shell_exec($cmd),
+            'response' => $output,
+            'return_code' => $returnCode,
         ];
+        $log->info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
+        $log->info('Gitdeploy: ' . $cmd . 'output: ' . print_r($output, true));
 
         //Lets see if we have commands to run and run them
         if (!empty(config('gitdeploy.commands'))) {
@@ -210,18 +225,16 @@ class GitDeployController extends Controller
                         . ' '
                         . escapeshellarg($repo_dir)
                         . ' ; '
-                        . escapeshellcmd($command)
-                        . ' &>> '
-                        . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
-                Log::info('Gitdeploy: Running post pull command: '.$cmd);
+                        . escapeshellcmd($command);
+                $log->info('Gitdeploy: Running post pull command: '.$cmd);
                 exec($cmd, $output, $returnCode);
                 array_push($command_results, [
                     'cmd' => $cmd,
                     'output' => $output,
                     'return_code' => $returnCode,
                 ]);
-                Log::info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
-                Log::info('Gitdeploy: ' . $cmd . 'output: ' . print_r($output, true));
+                $log->info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
+                $log->info('Gitdeploy: ' . $cmd . 'output: ' . print_r($output, true));
             }
         }
 
