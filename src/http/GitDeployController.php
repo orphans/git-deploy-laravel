@@ -206,7 +206,13 @@ class GitDeployController extends Controller
             foreach ($commands as $command) {
                 $output = array();
                 $returnCode = '';
-                $cmd = escapeshellcmd('cd') . escapeshellarg($repo_dir . ' ; ') . ($command). ' &>> ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+                $cmd = escapeshellcmd('cd')
+                        . ' '
+                        . escapeshellarg($repo_dir)
+                        . ' ; '
+                        . escapeshellcmd($command)
+                        . ' &>> '
+                        . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
                 Log::info('Gitdeploy: Running post pull command: '.$cmd);
                 exec($cmd, $output, $returnCode);
                 array_push($command_results, [
