@@ -189,6 +189,9 @@ class GitDeployController extends Controller
             Artisan::call('down');
         }
 
+        //Add to PATH so node can be found
+        putenv('PATH=' . getenv('PATH') . ':/usr/local/bin:/usr/bin');
+
         // git pull
         Log::info('Gitdeploy: Pulling latest code on to server');
 
