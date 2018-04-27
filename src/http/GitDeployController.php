@@ -188,9 +188,10 @@ class GitDeployController extends Controller
             Log::info('Gitdeploy: putting site into maintenance mode');
             Artisan::call('down');
         }
-
+        //Safely Get Local PATH
+        $path=getenv('PATH', true) ?: getenv('PATH');
         //Add to PATH so node can be found
-        putenv('PATH=' . getenv('PATH') . ':/usr/local/bin:/usr/bin');
+        putenv('PATH=' . $path . ':/usr/local/bin:/usr/bin');
 
         // git pull
         Log::info('Gitdeploy: Pulling latest code on to server');
