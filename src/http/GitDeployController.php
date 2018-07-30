@@ -218,6 +218,12 @@ class GitDeployController extends Controller
                 $postdata['commits'][$commit_key]['human_date'] = $date_str;
             }
 
+            // Standardise formats for Gitlab / Github payload differences
+            if (isset($postdata['pusher']) && !empty($postdata['pusher'])) {
+                $postdata['user_name'] = $postdata['pusher']['name'];
+                $postdata['user_email'] = $postdata['pusher']['email'];
+            }
+            
             // Use package's own sender or the project default?
             $addressdata['sender_name'] = config('mail.from.name');
             $addressdata['sender_address'] = config('mail.from.address');
