@@ -22,35 +22,34 @@ class GitDeployController extends Controller
 
         // create a log channel
         $log = new Logger('gitdeploy');
-        $log->pushHandler(new StreamHandler(storage_path('logs/gitdeploy.log'), Logger::WARNING));
+        $log->pushHandler(new StreamHandler(storage_path('logs/gitdeploy.log'), Logger::DEBUG));
 
         $git_path = !empty(config('gitdeploy.git_path')) ? config('gitdeploy.git_path') : 'git';
         $git_remote = !empty(config('gitdeploy.remote')) ? config('gitdeploy.remote') : 'origin';
 
         // Limit to known servers
         if (!empty(config('gitdeploy.allowed_sources'))) {
-
             $remote_ip = $this->formatIPAddress($_SERVER['REMOTE_ADDR']);
             $allowed_sources = array_map([$this, 'formatIPAddress'], config('gitdeploy.allowed_sources'));
 
-                if (!in_array($remote_ip, $allowed_sources)) {
-                    $log->addError('Request must come from an approved IP');
-                        return Response::json([
+            if (!in_array($remote_ip, $allowed_sources)) {
+                $log->addError('Request must come from an approved IP');
+                return Response::json([
                             'success' => false,
                             'message' => 'Request must come from an approved IP',
                         ], 401);
-                }
             }
+        }
 
-            // Collect the posted data
-            $postdata = json_decode($request->getContent(), TRUE);
-            if (empty($postdata)) {
-                $log->addError('Web hook data does not look valid');
-                    return Response::json([
+        // Collect the posted data
+        $postdata = json_decode($request->getContent(), true);
+        if (empty($postdata)) {
+            $log->addError('Web hook data does not look valid');
+            return Response::json([
                         'success' => false,
                         'message' => 'Web hook data does not look valid',
-                ], 500);
-            }
+                ], 400);
+        }
 
         // Check the config's directory
         $repo_dir = config('gitdeploy.repo_path');
@@ -130,8 +129,8 @@ class GitDeployController extends Controller
             /**
              * Check hmac secrets (Github)
              */
-            else if (config('gitdeploy.secret_type') == 'mac') {
-                if (!hash_equals('sha1=' . hash_hmac('sha1', $request->getContent(), config('gitdeploy.secret')))){
+            elseif (config('gitdeploy.secret_type') == 'mac') {
+                if (!hash_equals('sha1=' . hash_hmac('sha1', $request->getContent(), config('gitdeploy.secret')))) {
                     $log->addError('Secret did not match');
                     return Response::json([
                         'success' => false,
@@ -148,7 +147,7 @@ class GitDeployController extends Controller
                 return Response::json([
                     'success' => false,
                     'message' => 'Unsupported secret type',
-                ], 500);
+                ], 422);
             }
 
             // If we get this far then the secret matched, lets go ahead!
@@ -158,17 +157,30 @@ class GitDeployController extends Controller
         $cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') .  ' --work-tree=' . escapeshellarg($repo_dir) . ' rev-parse --abbrev-ref HEAD';
         $current_branch = trim(exec($cmd)); //Alternativly shell_exec
 
-        // Get branch this webhook is for
-        $pushed_branch = explode('/', $postdata['ref']);
-        $pushed_branch = trim($pushed_branch[2]);
+        // Get branch this webhook is for if push event
+        if (isset($postdata['ref'])) {
+            $pushed_branch = explode('/', $postdata['ref']);
+            $pushed_branch = trim($pushed_branch[2]);
+            // Get branch this webhook is for if pull request
+        } elseif (isset($postdata['base']['ref'])) {
+            $pushed_branch = explode('/', $postdata['base']['ref']);
+            $pushed_branch = trim($pushed_branch[2]);
+            // Get branch fails
+        } else {
+            $log->addWarning('Could not determine refs for action');
+            return Response::json([
+                'success' => false,
+                'message' => 'Could not determine refs for action',
+            ], 422);
+        }
 
         // If the refs don't matchthis branch, then no need to do a git pull
-        if ($current_branch !== $pushed_branch){
+        if ($current_branch !== $pushed_branch) {
             $log->addWarning('Pushed refs do not match current branch');
             return Response::json([
                 'success' => false,
                 'message' => 'Pushed refs do not match current branch',
-            ], 500);
+            ], 422);
         }
 
         // At this point we're happy everything is OK to pull, lets put Laravel into Maintenance mode.
@@ -176,16 +188,72 @@ class GitDeployController extends Controller
             Log::info('Gitdeploy: putting site into maintenance mode');
             Artisan::call('down');
         }
+        //Get PATH
+        $path=array();
+        exec('echo $PATH', $path);
+        $path=$path[0];
+
+        //Log PATH before changing it
+        $log->info('Gitdeploy: PATH before: ' . $path);
+
+        //Add to PATH so node can be found
+        putenv('PATH=' . $path . ':/usr/local/bin:/usr/bin');
+
+        //Check PATH after setting and log it
+        $path=array();
+        exec('echo $PATH', $path);
+        $path=$path[0];
+        $log->info('Gitdeploy: PATH after: ' . $path);
 
         // git pull
         Log::info('Gitdeploy: Pulling latest code on to server');
-        $cmd = escapeshellcmd($git_path) . ' --git-dir=' . escapeshellarg($repo_dir . '/.git') . ' --work-tree=' . escapeshellarg($repo_dir) . ' pull ' . escapeshellarg($git_remote) . ' ' . escapeshellarg($current_branch) . ' > ' . escapeshellarg($repo_dir . '/storage/logs/gitdeploy.log');
+
+        $output = array();
+        $returnCode = '';
+
+        $cmd = escapeshellcmd($git_path)
+                . ' --git-dir='
+                . escapeshellarg($repo_dir . '/.git')
+                . ' --work-tree=' . escapeshellarg($repo_dir)
+                . ' pull ' . escapeshellarg($git_remote)
+                . ' '
+                . escapeshellarg($current_branch);
+
+        exec($cmd, $output, $returnCode);
 
         $server_response = [
             'cmd' => $cmd,
             'user' => shell_exec('whoami'),
-            'response' => shell_exec($cmd),
+            'response' => $output,
+            'return_code' => $returnCode,
         ];
+        $log->info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
+        $log->info('Gitdeploy: ' . $cmd . 'output: ' . print_r($output, true));
+
+        //Lets see if we have commands to run and run them
+        if (!empty(config('gitdeploy.commands'))) {
+            $commands = config('gitdeploy.commands');
+            $command_results = array();
+            foreach ($commands as $command) {
+                $output = array();
+                $returnCode = '';
+                $cmd = escapeshellcmd('cd')
+                        . ' '
+                        . escapeshellarg($repo_dir)
+                        . ' ; '
+                        . escapeshellcmd($command)
+                        . ' 2>&1';
+                $log->info('Gitdeploy: Running post pull command: '.$cmd);
+                exec($cmd, $output, $returnCode);
+                array_push($command_results, [
+                    'cmd' => $cmd,
+                    'output' => $output,
+                    'return_code' => $returnCode,
+                ]);
+                $log->info('Gitdeploy: ' . $cmd . 'finished with code: ' . $returnCode);
+                $log->info('Gitdeploy: ' . $cmd . 'output: ' . print_r($output, true));
+            }
+        }
 
         // Put site back up and end maintenance mode
         if (!empty(config('gitdeploy.maintenance_mode'))) {
@@ -239,14 +307,13 @@ class GitDeployController extends Controller
             $emailTemplate = config('gitdeploy.email_template', 'gitdeploy::email');
 
             // Todo: Put Mail send into queue to improve performance
-            \Mail::send($emailTemplate , [ 'server' => $server_response, 'git' => $postdata ], function($message) use ($postdata, $addressdata) {
+            \Mail::send($emailTemplate, [ 'server' => $server_response, 'git' => $postdata, 'command_results' => $command_results ], function ($message) use ($postdata, $addressdata) {
                 $message->from($addressdata['sender_address'], $addressdata['sender_name']);
                 foreach ($addressdata['recipients'] as $recipient) {
                     $message->to($recipient['address'], $recipient['name']);
                 }
                 $message->subject('Repo: ' . $postdata['repository']['name'] . ' updated');
             });
-
         }
 
         return Response::json(true);
@@ -258,12 +325,12 @@ class GitDeployController extends Controller
      * Since IPv6 can be supplied in short hand or long hand formats.
      *
      * e.g. ::1 is equalvent to 0000:0000:0000:0000:0000:0000:0000:0001
-     * 
+     *
      * @param  string $ip   Input IP address to be formatted
      * @return string   Formatted IP address
      */
-    private function formatIPAddress(string $ip) {
+    private function formatIPAddress(string $ip)
+    {
         return inet_ntop(inet_pton($ip));
     }
-
 }
