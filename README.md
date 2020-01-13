@@ -1,6 +1,6 @@
 # Deployment of Laravel projects using Git webhooks
 
-git-deploy-laravel allow for automated deployment using webhook requests from your repository's server, and automatically pulling project code using the local Git binary.
+git-deploy-laravel allows for automated deployment using webhook requests from your repository's server, and automatically pulls project code using the local Git binary.
 
 This should work out-of-the-box with Laravel 5.x using with webhooks from GitHub and GitLab servers.
 
