@@ -181,7 +181,7 @@ return [
     |
     | 'commands' => [
     |     'composer install --no-dev --optimize-autoloader',
-    |     'php artisan migrate --force'
+    |     'php artisan migrate --force',
     |     'npm install --production',
     |     'npm run production',
     |     'php artisan config:cache',
