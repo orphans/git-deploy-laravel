@@ -74,8 +74,8 @@ return [
     | server listens on IPv4 and IPv6 it would be safest to add both.
     |
     | e.g.
-    | 
-    | 'allowed_sources' => ['192.160.0.1', '::1'], 
+    |
+    | 'allowed_sources' => ['192.160.0.1', '::1'],
     |
     */
 
@@ -89,7 +89,7 @@ return [
     | The name of the remote repository to pull the changes from
     |
     */
-    
+
     'remote' => 'origin',
 
     /*
@@ -102,7 +102,7 @@ return [
     | Leave blank to let the system detect using the current PATH variable
     |
     */
-    
+
     'git_path' => '',
 
     /*
@@ -142,9 +142,9 @@ return [
     | If 'secret' is set to true, Gitdeploy will deny requests where the
     | signature does not match. If set to false it will ignore any signature
     | headers it recieves.
-    | 
+    |
     | For Gitlab servers, you probably want the settings below:
-    | 
+    |
     |     'secret_type' => 'plain',
     |     'secret_header' => 'X-Gitlab-Token',
     |
@@ -153,7 +153,7 @@ return [
     |    'secret_type' => 'hmac',
     |    'secret_header' => 'X-Hub-Signature',
     */
-   
+
     'secret' => false,
 
     /**
@@ -171,4 +171,25 @@ return [
      */
     'secret_key' => '',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Post Pull Commands
+    |--------------------------------------------------------------------------
+    |
+    | Array of commands to complete after the pull.
+    | All commands will be run from the repo path
+    |
+    | 'commands' => [
+    |     'composer install --no-dev --optimize-autoloader',
+    |     'php artisan migrate --force',
+    |     'npm install --production',
+    |     'npm run production',
+    |     'php artisan config:cache',
+    |     'php artisan route:cache',
+    |     'php artisan view:cache',
+    | ]
+    */
+
+    'commands' => [
+    ],
 ];
