@@ -16,7 +16,7 @@ class GitDeployServiceProvider extends ServiceProvider
         $this->publishes([
             __dir__ . '/../config/gitdeploy.php' => config_path('gitdeploy.php')
         ], 'config');
-        $this->loadRoutesFrom(__dir__ . '/http/routes.php');
+        $this->loadRoutesFrom(__dir__ . '/../routes/web.php');
         $this->loadViewsFrom(__dir__ . '/views', 'gitdeploy');
 
     }

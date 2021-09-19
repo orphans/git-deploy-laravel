@@ -25,14 +25,6 @@ Or run:
 
 ### Step 2
 
-Add the following line to you providers in `config/app.php`:
-
-    Orphans\GitDeploy\GitDeployServiceProvider::class,
-    
-** New in Laravel 5.5 - Service provide should be automatically detected without the above change **
-
-### Step 3
-
 Add the _/git-deploy_ route to CSRF exceptions so your repo's host can send messages to your project.
 
 
@@ -42,7 +34,7 @@ In file in `app/Http/Middleware/VerifyCsrfToken.php` add:
         'git-deploy',
     ];
 
-### Step 4 Optional
+### Step 3 Optional
 In case you need additional action after a successful commit, you can add you own Event Listener.
 For example you can write your own update script to run migrations etc.
 
